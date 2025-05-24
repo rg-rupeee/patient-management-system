@@ -77,4 +77,16 @@ public class Patient {
 	public void setRegisteredDate(LocalDate registeredDate) {
 		this.registeredDate = registeredDate;
 	}
+
+	@Override
+	public String toString() {
+		return "Patient{" +
+				"id=" + id +
+				", name='" + name + '\'' +
+				", email='" + email + '\'' +
+				", address='" + address + '\'' +
+				", dateOfBirth=" + dateOfBirth +
+				", registeredDate=" + registeredDate +
+				'}';
+	}
 }
