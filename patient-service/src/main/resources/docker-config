@@ -1,0 +1,35 @@
+// network - internal
+docker network create internal
+
+
+// Configuration : patient-service-db
+Name: patient-service-db
+Image: postgres:latest
+Container Name: patient-service-db
+ENV VARS :
+- POSTGRES_USER = admin_user
+- POSTGRES_PASSWORD = password
+- POSTGRES_DB = db
+BIND PORT :
+- HOST = 5000
+- CONTAINER = 5432
+BIND MOUNT :
+- HOST PATH = R:\DOCKER_VOLUME
+- Container Path = var/lib/postgresql/data
+Network :
+- internal
+
+
+// DOCKER COMMAND : patient-service-db
+docker run -d `
+  --name patient-service-db `
+  --network internal `
+  -e POSTGRES_USER=admin_user `
+  -e POSTGRES_PASSWORD=password `
+  -e POSTGRES_DB=db `
+  -p 5000:5432 `
+  -v "R:/DOCKER_VOLUME:/var/lib/postgresql/data" `
+  postgres:latest
+
+
+// Configuration : patient-service
