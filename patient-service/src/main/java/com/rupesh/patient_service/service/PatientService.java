@@ -4,6 +4,7 @@ import com.rupesh.patient_service.dto.PatientRequestDTO;
 import com.rupesh.patient_service.dto.PatientResponseDTO;
 import com.rupesh.patient_service.exception.EmailAlreadyExistsException;
 import com.rupesh.patient_service.exception.PatientNotFoundException;
+import com.rupesh.patient_service.grpc.BillingServiceGrpcClient;
 import com.rupesh.patient_service.mapper.PatientMapper;
 import com.rupesh.patient_service.model.Patient;
 import com.rupesh.patient_service.repository.PatientRepository;
@@ -17,12 +18,12 @@ import java.util.UUID;
 @Service
 public class PatientService {
 	private final PatientRepository patientRepository;
+	private final BillingServiceGrpcClient billingServiceGrpcClient;
 
-
-	public PatientService(PatientRepository patientRepository) {
+	public PatientService(PatientRepository patientRepository, BillingServiceGrpcClient billingServiceGrpcClient) {
 		this.patientRepository = patientRepository;
+		this.billingServiceGrpcClient = billingServiceGrpcClient;
 	}
-
 
 	public List<PatientResponseDTO> getPatients(){
 		List<Patient> patients = patientRepository.findAll();
@@ -30,13 +31,18 @@ public class PatientService {
 		return patients.stream().map(PatientMapper::toDTO).toList();
 	}
 
-
 	public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO){
 		if(patientRepository.existsByEmail(patientRequestDTO.getEmail())){
 			throw new EmailAlreadyExistsException("A patient of this email already exists " + patientRequestDTO.getEmail());
 		}
 
 		Patient newPatient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
+
+		billingServiceGrpcClient.createBillingAccount(
+				newPatient.getId().toString(),
+				newPatient.getName(),
+				newPatient.getEmail()
+		);
 
 		return PatientMapper.toDTO(newPatient);
 	}
